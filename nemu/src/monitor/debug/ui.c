@@ -7,6 +7,9 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+extern void isa_reg_display();
+extern void show_wp();
+
 void cpu_exec(uint64_t);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
@@ -52,6 +55,25 @@ static int cmd_si(char *args) {
     return 0;
 }
 
+static int cmd_info(char *args) {
+    if (args == NULL) {
+        printf("Illegal number of parameters.\n");
+        printf("Usage: info r (print registers) | info w (print watchpoints)\n");
+        return 0;
+    }
+
+    if (strcmp(args, "r") == 0) {
+        isa_reg_display(); // 调用 CPU 模块提供的打印接口
+    } 
+    else if (strcmp(args, "w") == 0) {
+        show_wp();         // 调用 watchpoint 模块提供的打印接口
+    } 
+    else {
+        printf("Unknown argument '%s'.\n", args);
+    }
+    return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -63,6 +85,8 @@ static struct {
     { "c", "Continue the execution of the program", cmd_c },
     { "q", "Exit NEMU", cmd_q },
     { "si", "Step one instruction exactly (or N instructions if specified: si [N])", cmd_si },
+    { "info", "Print status: info r (print registers) | info w (print watchpoints)", cmd_info },
+    
     /* TODO: Add more commands */
 
 };
