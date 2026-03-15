@@ -74,6 +74,58 @@ static int cmd_info(char *args) {
     return 0;
 }
 
+static int cmd_x(char *args) {
+    if (args == NULL) {
+        printf("Usage: x N EXPR\n");
+        return 0;
+    }
+
+    // 1. 提取 N 的值
+    // 第一次调用 strtok，传入 args
+    char *n_str = strtok(args, " ");
+    if (n_str == NULL) {
+        printf("Usage: x N EXPR\n");
+        return 0;
+    }
+    int N = atoi(n_str);
+
+    // 2. 提取表达式 EXPR
+    // 注意：这里的分隔符是一个空字符串 ""，或者 "\n"
+    // 它的作用是不再用空格分割，而是直接把后面剩余的整个字符串全部提取出来
+    // 这样才能正确处理带有空格的表达式，比如 "x 10 $eax + 4"
+    char *expr_str = strtok(NULL, ""); 
+    if (expr_str == NULL) {
+        printf("Usage: x N EXPR\n");
+        return 0;
+    }
+
+    // 3. 计算表达式的值
+    bool succ = true;
+    vaddr_t addr = expr(expr_str, &succ);
+    if (!succ) {
+        printf("Invalid Expression!\n");
+        return 0; // 解析失败也返回0，让程序继续等待下一条命令
+    }
+
+    // 4. 打印内存 (vaddr_t 等价于 uint32_t)
+    printf("Address     \tDword Value\tBytes (Low ===> High)\n");
+    for (int i = 0; i < N; i++) {
+        uint32_t data = vaddr_read(addr + 4 * i, 4);
+
+        // 先打印地址和完整的 32 位值
+        printf("0x%08x:\t0x%08x\t", addr + 4 * i, data);
+
+        // 保留你原本优秀的按字节打印逻辑（小端序展示）
+        uint32_t temp = data;
+        for (int j = 0; j < 4; j++) {
+            printf("%02x ", temp & 0xff);
+            temp = temp >> 8;
+        }
+        printf("\n");
+    }
+    return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -86,7 +138,8 @@ static struct {
     { "q", "Exit NEMU", cmd_q },
     { "si", "Step one instruction exactly (or N instructions if specified: si [N])", cmd_si },
     { "info", "Print status: info r (print registers) | info w (print watchpoints)", cmd_info },
-    
+    { "x", "Scan memory: x N EXPR", cmd_x },
+
     /* TODO: Add more commands */
 
 };
