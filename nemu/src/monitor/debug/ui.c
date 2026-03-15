@@ -107,6 +107,26 @@ static int cmd_x(char *args){
     return 0;
 }
 
+static int cmd_p(char *args) {
+    if (args == NULL) {
+        printf("Usage: p EXPR\n");
+        return 0;
+    }
+
+    bool success = true;
+    // 调用你刚刚在 expr.c 中写好的 expr() 函数
+    uint32_t res = expr(args, &success);
+
+    if (success) {
+        // 打印计算结果，同时显示十进制和十六进制
+        printf("%u (0x%08x)\n", res, res);
+    } else {
+        // 提示的错误信息（如果在 expr 里已经打印过具体错误，这里可以省略，但加上更保险）
+        printf("Evaluation failed.\n");
+    }
+    return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -120,6 +140,7 @@ static struct {
     { "si", "Step one instruction exactly (or N instructions if specified: si [N])", cmd_si },
     { "info", "Print status: info r (print registers) | info w (print watchpoints)", cmd_info },
     { "x", "Scan memory: x N EXPR", cmd_x },
+    { "p", "Print expression: p EXPR", cmd_p },
 
     /* TODO: Add more commands */
 
