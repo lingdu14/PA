@@ -56,3 +56,41 @@ void isa_reg_display() {
     printf("eip\t0x%08x\t%u\n", cpu.eip, cpu.eip);
     printf("----------------------------------------\n");
 }
+
+// 传入寄存器名称的字符串（比如 "eax"、"eip"），返回对应的数值
+uint32_t isa_reg_str2val(const char *s, bool *success) {
+    // 1. 匹配 32 位通用寄存器 (eax, ecx, etc.)
+    for (int i = 0; i < 8; i++) {
+        if (strcmp(regsl[i], s) == 0) {
+            *success = true;
+            return reg_l(i); // reg_l 宏已经在 reg.h 中定义
+        }
+    }
+
+    // 2. 匹配 PC 寄存器 (eip)
+    if (strcmp("eip", s) == 0 || strcmp("pc", s) == 0) {
+        *success = true;
+        return cpu.eip;
+    }
+
+    // 3. (可选) 匹配 16 位寄存器 (ax, cx, etc.)
+    for (int i = 0; i < 8; i++) {
+        if (strcmp(regsw[i], s) == 0) {
+            *success = true;
+            return reg_w(i); 
+        }
+    }
+
+    // 4. (可选) 匹配 8 位寄存器 (al, cl, etc.)
+    for (int i = 0; i < 8; i++) {
+        if (strcmp(regsb[i], s) == 0) {
+            *success = true;
+            return reg_b(i);
+        }
+    }
+
+    // 如果都没匹配上
+    *success = false;
+    printf("Unknown register: %s\n", s);
+    return 0;
+}
