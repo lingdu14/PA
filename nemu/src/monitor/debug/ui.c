@@ -64,7 +64,6 @@ static int cmd_info(char *args) {
 
     if (strcmp(args, "r") == 0) {
         isa_reg_display(); // 调用 CPU 模块提供的打印接口
-        printf("===================\n");
     } 
     else if (strcmp(args, "w") == 0) {
         // show_wp();         // 调用 watchpoint 模块提供的打印接口
