@@ -63,7 +63,16 @@ static int cmd_info(char *args) {
     }
 
     if (strcmp(args, "r") == 0) {
-        isa_reg_display(); // 调用 CPU 模块提供的打印接口
+        printf("eax : %08x\n" , cpu.eax);
+        printf("ecx : %08x\n" , cpu.ecx);
+        printf("edx : %08x\n" , cpu.edx);
+        printf("ebx : %08x\n" , cpu.ebx);
+        printf("esp : %08x\n" , cpu.esp);
+        printf("ebp : %08x\n" , cpu.ebp);
+        printf("esi : %08x\n" , cpu.esi);
+        printf("edi : %08x\n" , cpu.edi);
+        printf("===================\n");
+        // isa_reg_display(); // 调用 CPU 模块提供的打印接口
     } 
     else if (strcmp(args, "w") == 0) {
         // show_wp();         // 调用 watchpoint 模块提供的打印接口
