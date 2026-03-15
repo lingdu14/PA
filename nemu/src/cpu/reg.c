@@ -45,6 +45,10 @@ void reg_test() {
 }
 
 void isa_reg_display() {
+    // 打印优雅的表头
+    printf("Name\tHex\t\tDecimal\n");
+    printf("----------------------------------------\n");
+
     // 打印 32 位通用寄存器
     for (int i = 0; i < 8; i++) {
         printf("%s\t0x%08x\t%d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
