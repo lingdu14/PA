@@ -117,6 +117,10 @@ static bool make_token(char *e) {
                         Assert(substr_len<32,"Length of numbers should be no more than 31!\n");
                         //KISS protocol
                         strncpy(tokens[nr_token].str,substr_start,substr_len); //copy the string
+                        
+                        // 【关键修复】：必须手动在末尾添加 \0，防止读到上一轮残留的脏数据！
+                        tokens[nr_token].str[substr_len] = '\0';
+
                         tokens[nr_token].priority =-1; // priority for dec hex and reg
                         break;
                     default: break;
