@@ -23,7 +23,7 @@ static struct rule {
      */
 
     {" +", TK_NOTYPE},    // spaces
-    {"\\+", '+'},         // plus
+    {"\\+", TK_ADD},         // plus
     {"==", TK_EQ},         // equal
     {"!=",TK_NEQ},
     {"0[xX][0-9a-fA-F]+",TK_HEX},
