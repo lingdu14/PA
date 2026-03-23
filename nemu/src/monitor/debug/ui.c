@@ -75,35 +75,63 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args){
-    char *arg = strtok(NULL," ");
     if(args == NULL){
-        printf("Illegal parameters.\n");
+        printf("Illegal parameters. Usage: x N EXPR\n");
         return 0;
     }
-    int N = atoi(args); //string to int
-    arg = strtok(NULL," "); //arg is the EXPR
-    if(arg == NULL){
-        printf("Illegal Parameters.\n");
+
+    // 1. 提取第一个参数 N (扫描长度)
+    // 这里使用 strtok 提取第一个数字。
+    // 注意：要传入 args 而不是 NULL，来初始化 strtok 的上下文。
+    char *arg_n = strtok(args, " ");
+    if(arg_n == NULL){
+        printf("Missing length parameter.\n");
         return 0;
     }
+    int N = atoi(arg_n); 
+
+    // 2. 获取剩余的所有字符串作为表达式 (EXPR)
+    // strtok 会把找到的空格变成 '\0'。
+    // 所以 arg_n 的末尾之后，就是剩余字符串的起点。
+    // 用 arg_n 的地址加上它的长度，再加 1（跳过那个被变成 '\0' 的空格）。
+    char *arg_expr = arg_n + strlen(arg_n) + 1; 
+
+    // 检查是否真的有表达式输入
+    // 这里需要注意，有可能用户输入了 "x 3" 后面加了一大堆空格但没有表达式
+    // 跳过开头的多余空格
+    while (*arg_expr == ' ') {
+        arg_expr++;
+    }
+
+    if(*arg_expr == '\0'){
+        printf("Missing expression.\n");
+        return 0;
+    }
+
+    // 3. 将整个表达式字符串交给 expr 求值
     bool succ = true;
-    vaddr_t addr = expr(arg,&succ);
+    vaddr_t addr = expr(arg_expr, &succ);
+
     if(!succ)
     {
         printf("Invalid Expression!\n");
-        return 1;
+        return 0; // 注意：NEMU 的命令处理函数通常返回 0 表示继续，返回 -1 表示退出
     }
-    //vaddr_t is actually uint32_t
+
+    // 4. 打印内存内容
     printf("Bytes : \tLow ===> High\n");
-    for (int i=0;i<N;i++){
-        uint32_t data = vaddr_read(addr+4*i,4);
-        printf("0x%08x :\t",addr+4*i);
-        for(int j=0;j<4;j++){
-            printf("%02x ",data&0xff);
+    for (int i = 0; i < N; i++){
+        uint32_t data = vaddr_read(addr + 4 * i, 4);
+        printf("0x%08x :\t", addr + 4 * i);
+
+        // 按字节打印，处理小端序显示
+        for(int j = 0; j < 4; j++){
+            printf("%02x ", data & 0xff);
             data = data >> 8 ;
         }
         printf("\n");
     }
+
     return 0;
 }
 
@@ -114,7 +142,7 @@ static int cmd_p(char *args) {
     }
 
     bool success = true;
-    // 调用你刚刚在 expr.c 中写好的 expr() 函数
+    // 调用在 expr.c 中写好的 expr() 函数
     uint32_t res = expr(args, &success);
 
     if (success) {
