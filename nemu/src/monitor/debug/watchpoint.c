@@ -20,60 +20,51 @@ void init_wp_pool() {
 
 /* TODO: Implement the functionality of watchpoint */
 
-/* 申请一个新的监视点节点 */
+/* 创建一个新的监视点，从空闲链表中取出一个节点，插入到活动链表头部 */
 WP* new_wp() {
-    /* 如果 free_ 链表为空，说明 32 个监视点已经全部用完 */
-    Assert(free_ != NULL, "Error: Watchpoints exceeded maximum (32)!\n");
+    Assert(free_ != NULL, "Watch points exceeded maximum!\n");
 
-    /* 从 free_ 链表头部摘取一个空闲节点 */
-    WP *wp = free_;
-    free_ = free_->next;
+    WP *wp = free_;          // 获取空闲链表头节点
+    free_ = free_->next;     // 空闲链表头指针后移
 
-    /* 将获取到的节点插入到 head 链表的头部 (头插法) */
-    wp->next = head;
-    head = wp;
+    wp->next = head;         // 新节点指向当前活动链表头
+    head = wp;               // 活动链表头更新为新节点
 
     return wp;
 }
 
-/* 释放一个指定编号的监视点节点，并清空其数据 */
+/* 释放指定编号的监视点：从活动链表中删除，并回收到空闲链表头部 */
 bool free_wp(int N) {
-    if (head == NULL) {
-        printf("No watchpoints to free!\n");
-        return false;
-    }
+    Assert(head != NULL, "Empty watchpoints!\n");
 
     WP *wp = head;
-    WP *prec = NULL;
+    WP *prev = NULL;
 
-    /* 遍历 head 链表，寻找编号为 N 的监视点 */
+    // 遍历活动链表，查找编号为 N 的监视点
     while (wp != NULL && wp->NO != N) {
-        prec = wp;
+        prev = wp;
         wp = wp->next;
     }
 
-    /* 如果遍历到末尾仍未找到对应的节点 */
-    if (wp == NULL) {
-        printf("Watchpoint %d not found!\n", N);
+    if (wp == NULL) {        // 未找到对应编号
+        printf("Invalid NO!\n");
         return false;
     }
 
-    /* 找到了目标节点，将其从 head 链表中脱离 */
-    if (prec != NULL) {
-        // 目标节点在链表中间或尾部
-        prec->next = wp->next; 
+    // 从活动链表中摘除 wp 节点
+    if (prev == NULL) {      // 要删除的是头节点
+        head = wp->next;
     } else {
-        // 目标节点正好是 head 链表的第一个节点
-        head = wp->next;       
+        prev->next = wp->next;
     }
 
-    /* 将脱离下来的节点插回 free_ 链表的头部，完成回收 */
+    // 将 wp 节点插入空闲链表头部
     wp->next = free_;
     free_ = wp;
 
-    /* 清理该节点残留的历史数据，避免脏数据干扰下一次复用 */
-    memset(wp->expr, 0, sizeof(wp->expr));
-    wp->old_val = 0;
+    // 重置该监视点的表达式和值，避免残留数据影响后续使用
+    memset(wp->expr, 0, sizeof(char) * 32);
+    wp->val = 0;
 
     return true;
 }

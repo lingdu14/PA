@@ -15,4 +15,16 @@ typedef struct watchpoint {
 
 } WP;
 
+/* 初始化监视点池，在系统启动时调用一次 */
+void init_wp_pool(void);
+
+/* 创建一个新的监视点，返回其指针 */
+WP* new_wp(void);
+
+/* 释放指定编号的监视点，成功返回 true，失败返回 false */
+bool free_wp(int N);
+
+/* 打印当前所有活动的监视点（编号、表达式、当前值） */
+void show_wp(void);
+
 #endif
