@@ -6,13 +6,13 @@ make_EHelper(mov) {
 }
 
 make_EHelper(push) {
-  TODO();
-
+rtl_push(&(id_dest->val));//译码函数将源寄存器的内容保存在了id_dest->val中
   print_asm_template1(push);
 }
 
 make_EHelper(pop) {
-  TODO();
+  rtl_pop(&t2);
+  operand_write(id_dest, &t2); //decode.c
 
   print_asm_template1(pop);
 }
