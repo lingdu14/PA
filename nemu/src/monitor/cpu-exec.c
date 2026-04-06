@@ -1,5 +1,6 @@
 #include "nemu.h"
 #include "monitor/monitor.h"
+#include "monitor/watchpoint.h"
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -14,31 +15,34 @@ void exec_wrapper(bool);
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
-  if (nemu_state == NEMU_END) {
-    printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
-    return;
-  }
-  nemu_state = NEMU_RUNNING;
+    if (nemu_state == NEMU_END) {
+        printf("Program execution has ended. To restart the program, exit NEMU and run again.\n");
+        return;
+    }
+    nemu_state = NEMU_RUNNING;
 
-  bool print_flag = n < MAX_INSTR_TO_PRINT;
+    bool print_flag = n < MAX_INSTR_TO_PRINT;
 
-  for (; n > 0; n --) {
-    /* Execute one instruction, including instruction fetch,
-     * instruction decode, and the actual execution. */
-    exec_wrapper(print_flag);
+    for (; n > 0; n --) {
+        /* Execute one instruction, including instruction fetch,
+         * instruction decode, and the actual execution. */
+        exec_wrapper(print_flag);
 
 #ifdef DEBUG
-    /* TODO: check watchpoints here. */
+        /* TODO: check watchpoints here. */
+        if(wp_changed()){
+            nemu_state = NEMU_STOP;
+        }
 
 #endif
 
 #ifdef HAS_IOE
-    extern void device_update();
-    device_update();
+        extern void device_update();
+        device_update();
 #endif
 
-    if (nemu_state != NEMU_RUNNING) { return; }
-  }
+        if (nemu_state != NEMU_RUNNING) { return; }
+    }
 
-  if (nemu_state == NEMU_RUNNING) { nemu_state = NEMU_STOP; }
+    if (nemu_state == NEMU_RUNNING) { nemu_state = NEMU_STOP; }
 }

@@ -66,7 +66,7 @@ static int cmd_info(char *args) {
         isa_reg_display(); // 调用 CPU 模块提供的打印接口
     } 
     else if (strcmp(args, "w") == 0) {
-        // show_wp();         // 调用 watchpoint 模块提供的打印接口
+        show_wp();         // 调用 watchpoint 模块提供的打印接口
     } 
     else {
         printf("Unknown argument '%s'.\n", args);
@@ -155,6 +155,60 @@ static int cmd_p(char *args) {
     return 0;
 }
 
+/* 设置监视点命令：w EXPR */
+static int cmd_w(char *args) {
+    if (args == NULL) {
+        printf("Usage: w EXPR\n");
+        return 0;
+    }
+
+    // 1. 申请一个新的监视点节点
+    WP *wp = new_wp();
+
+    // 2. 将用户输入的表达式字符串拷贝到节点的 expr 数组中
+    // 注意防止字符串过长溢出，保留最后一位给 '\0'
+    strncpy(wp->expr, args, sizeof(wp->expr) - 1);
+    wp->expr[sizeof(wp->expr) - 1] = '\0'; 
+
+    // 3. 计算表达式的初始值，并存入 val
+    bool success = true;
+    wp->val = expr(args, &success);
+
+    // 4. 容错处理：如果用户输入的表达式有语法错误
+    if (!success) {
+        printf("Error: Invalid expression '%s'\n", args);
+        free_wp(wp->NO); // 表达式算不出结果，把刚才申请的节点还回去
+        return 0;
+    }
+
+    // 5. 打印成功提示
+    printf("Watchpoint %d: %s \nInitial value: %u (0x%08x)\n", wp->NO, wp->expr, wp->val, wp->val);
+
+    return 0;
+}
+
+/* 删除监视点命令：d N */
+static int cmd_d(char *args) {
+    if (args == NULL) {
+        printf("Usage: d N (N is the watchpoint NO.)\n");
+        return 0;
+    }
+
+    // 1. 将字符串参数转换为整数编号 N
+    int no;
+    if (sscanf(args, "%d", &no) != 1) {
+        printf("Error: Invalid argument '%s'. Please input an integer.\n", args);
+        return 0;
+    }
+
+    // 2. 调用底层函数释放节点
+    if (free_wp(no)) {
+        printf("Watchpoint %d deleted successfully.\n", no);
+    }
+
+    return 0;
+}
+
 static int cmd_help(char *args);
 
 static struct {
@@ -169,7 +223,8 @@ static struct {
     { "info", "Print status: info r (print registers) | info w (print watchpoints)", cmd_info },
     { "x", "Scan memory: x N EXPR", cmd_x },
     { "p", "Print expression: p EXPR", cmd_p },
-
+    { "w", "Set a watchpoint: w EXPR", cmd_w },
+    { "d", "Delete a watchpoint: d N", cmd_d },
     /* TODO: Add more commands */
 
 };

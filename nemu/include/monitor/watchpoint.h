@@ -27,4 +27,6 @@ bool free_wp(int N);
 /* 打印当前所有活动的监视点（编号、表达式、当前值） */
 void show_wp(void);
 
+bool wp_changed();
+
 #endif

@@ -35,7 +35,11 @@ WP* new_wp() {
 
 /* 释放指定编号的监视点：从活动链表中删除，并回收到空闲链表头部 */
 bool free_wp(int N) {
-    Assert(head != NULL, "Empty watchpoints!\n");
+
+    if (head == NULL) {
+        printf("No watchpoints to free!\n");
+        return false;
+    }
 
     WP *wp = head;
     WP *prev = NULL;
@@ -80,4 +84,35 @@ void show_wp(){
         printf("%2d\t\t%s\t\t0x%x(%u)\n",wp->NO,wp->expr,wp->val,wp->val);
         wp = wp->next;
     }
+}
+
+bool wp_changed() {
+    WP* wp = head;
+    bool flag = false;
+
+    while(wp != NULL) {
+        bool succ = true;
+        uint32_t curr_val = expr(wp->expr, &succ);
+
+        // 保护：如果求值失败，直接跳过或者报错
+        if (!succ) {
+            printf("Error: Evaluation failed for watchpoint %d\n", wp->NO);
+            wp = wp->next;
+            continue;
+        }
+
+        if(curr_val != wp->val) { // 注意:WP 结构体里定义的变量名是 val
+            if(!flag) {
+                printf("Reached watchpoints:\n");
+            }
+            // 用 0x%08x 格式额外打印一下十六进制，方便后续 debug
+            printf("Watchpoint %d: %s \n  Old value: %u (0x%08x)\n  New value: %u (0x%08x)\n", 
+                    wp->NO, wp->expr, wp->val, wp->val, curr_val, curr_val);
+
+            wp->val = curr_val;
+            flag = true;
+        }
+        wp = wp->next;
+    }
+    return flag;
 }
