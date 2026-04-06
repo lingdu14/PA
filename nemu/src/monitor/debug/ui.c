@@ -147,9 +147,9 @@ static int cmd_p(char *args) {
 
     if (success) {
         // 打印计算结果，同时显示十进制和十六进制
-        printf("%u (0x%08x)\n", res, res);
+        printf("%d (0x%08x)\n", res, res);
     } else {
-        // 提示的错误信息（如果在 expr 里已经打印过具体错误，这里可以省略，但加上更保险）
+        // 提示的错误信息
         printf("Evaluation failed.\n");
     }
     return 0;
