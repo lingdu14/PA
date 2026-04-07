@@ -29,9 +29,9 @@ make_EHelper(xor) {
 
 make_EHelper(or) {
     // 类比xor
-    rtl_or(&t2, &id_dest->val, &id_src->val);
-    operand_write(id_dest, &t2);
-    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_or(&t3, &id_dest->val, &id_src->val);
+    operand_write(id_dest, &t3);
+    rtl_update_ZFSF(&t3, id_dest->width);
     rtl_set_CF(&tzero);
     rtl_set_OF(&tzero);
     print_asm_template2(or);
