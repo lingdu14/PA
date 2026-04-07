@@ -1,14 +1,25 @@
 #include "cpu/exec.h"
 
 make_EHelper(add) {
-    TODO();
-
+    rtl_add(&t2, &id_dest->val, &id_src->val);
+    operand_write(id_dest, &t2);
+    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_sltu(&t0,&t2, &id_dest->val);
+    rtl_set_CF(&t0);
+    rtl_xor(&t0, &id_src->val, &t2);
+    rtl_xor(&t1, &id_dest->val, &t2);  
+    rtl_and(&t0, &t0,&t1);
+    rtl_msb(&t0, &t0, id_dest->width);
+    rtl_set_OF(&t0);
     print_asm_template2(add);
 }
 
 make_EHelper(sub) {
     rtl_sub(&t2, &id_dest->val, &id_src->val);
     rtl_update_ZFSF(&t2, id_dest->width);//更新零标志ZF和符号标志SF
+    //设置进位标志CF
+    rtl_sltu(&t0, &id_dest->val, &id_src->val);
+    rtl_set_CF(&t0);
     //计算溢出标志OF
     //OF 触发条件：当两个同号的操作数相减，结果的符号与原操作数符号不一致时，产生溢出
     rtl_xor(&t0, &id_dest->val, &id_src->val);//检测操作数的符号位是否相同。若相同，结果符号位为0
@@ -21,25 +32,46 @@ make_EHelper(sub) {
 }
 
 make_EHelper(cmp) {
-    TODO();
-
+    rtl_sub(&t2, &id_dest->val, &id_src->val);
+    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_sltu(&t0, &id_dest->val, &id_src->val);
+    rtl_set_CF(&t0);
+    rtl_xor(&t0, &id_dest->val, &id_src->val);
+    rtl_xor(&t1, &id_dest->val, &t2);
+    rtl_and(&t0, &t0, &t1);
+    rtl_msb(&t0, &t0, id_dest->width);
+    rtl_set_OF(&t0); 
     print_asm_template2(cmp);
 }
 
 make_EHelper(inc) {
-    TODO();
+    rtl_addi(&t2, &id_dest->val, 1);
+    operand_write(id_dest, &t2);
+    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_eqi(&t0, &t2, 0x80000000);
+    rtl_set_OF(&t0);
 
     print_asm_template1(inc);
 }
 
 make_EHelper(dec) {
-    TODO();
+    rtl_subi(&t2, &id_dest->val,1);
+    operand_write(id_dest, &t2);
+    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_eqi(&t0, &t2, 0x7fffffff);
+    rtl_set_OF(&t0);
 
     print_asm_template1(dec);
 }
 
 make_EHelper(neg) {
-    TODO();
+    rtl_sub(&t2, &tzero, &id_dest->val);//0-src
+    rtl_update_ZFSF(&t2, id_dest->width);
+    rtl_neq0(&t0, &id_dest->val);
+    rtl_set_CF(&t0);
+    rtl_eqi(&t0, &id_dest->val, 0x80000000);
+    rtl_set_OF(&t0);
+    operand_write(id_dest, &t2);
 
     print_asm_template1(neg);
 }
