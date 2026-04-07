@@ -17,6 +17,9 @@ make_EHelper(add) {
 make_EHelper(sub) {
     rtl_sub(&t2, &id_dest->val, &id_src->val);
     rtl_update_ZFSF(&t2, id_dest->width);//更新零标志ZF和符号标志SF
+    //设置进位标志CF
+    rtl_sltu(&t0, &id_dest->val, &id_src->val);
+    rtl_set_CF(&t0);
     //计算溢出标志OF
     //OF 触发条件：当两个同号的操作数相减，结果的符号与原操作数符号不一致时，产生溢出
     rtl_xor(&t0, &id_dest->val, &id_src->val);//检测操作数的符号位是否相同。若相同，结果符号位为0
