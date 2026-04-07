@@ -164,6 +164,11 @@ void difftest_step(uint32_t eip) {
         printf("QEMU: ESP=0x%08x, EBP=0x%08x, ESI=0x%08x, EDI=0x%08x, EIP=0x%08x\n", r.esp, r.ebp, r.esi, r.edi, r.eip);
         printf("NEMU: ESP=0x%08x, EBP=0x%08x, ESI=0x%08x, EDI=0x%08x, EIP=0x%08x\n", cpu.esp, cpu.ebp, cpu.esi, cpu.edi, cpu.eip);
     }
+    else {
+        // 【这里是新加的 else 分支：对比一致时输出提示】
+        // 加个绿色高亮效果（\033[1;32m）会更好看，\033[0m 是恢复默认颜色
+        printf("\033[1;32m[PASS] Difftest MATCHED at EIP = 0x%08x\033[0m\n", cpu.eip);
+    }
 
     if (diff) {
         nemu_state = NEMU_END;
